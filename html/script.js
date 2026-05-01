@@ -2,6 +2,7 @@ let inventoryOpen = false;
 
 window.addEventListener('message', function(event) {
     if (event.data.action === 'openInventory') {
+        document.getElementById('overlay').style.display = 'block';
         document.getElementById('inventory').style.display = 'block';
         loadInventory(event.data.inventory);
         inventoryOpen = true;
@@ -30,6 +31,7 @@ function closeInventory() {
         },
         body: JSON.stringify({})
     });
+    document.getElementById('overlay').style.display = 'none';
     document.getElementById('inventory').style.display = 'none';
     inventoryOpen = false;
 }
