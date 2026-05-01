@@ -20,5 +20,5 @@ files {
     'html/script.js'
 }
 
--- Если используете MySQL
-dependency 'mysql-async'
+-- oxmysql
+dependency 'oxmysql'

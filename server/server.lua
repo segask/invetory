@@ -11,18 +11,18 @@ ESX.RegisterServerCallback('inventory:loadInventory', function(source, cb)
     local xPlayer = ESX.GetPlayerFromId(source)
     local identifier = xPlayer.identifier
 
-    MySQL.Async.fetchAll('SELECT * FROM user_inventory WHERE identifier = @identifier', {
-        ['@identifier'] = identifier
-    }, function(result)
-        local inventory = {}
+    local result = MySQL.query.await('SELECT * FROM user_inventory WHERE identifier = ?', {identifier})
+    
+    local inventory = {}
+    if result then
         for i=1, #result do
             inventory[result[i].item] = {
                 count = result[i].count,
                 slot = result[i].slot
             }
         end
-        cb(inventory)
-    end)
+    end
+    cb(inventory)
 end)
 
 -- Сохранение инвентаря
@@ -32,17 +32,12 @@ AddEventHandler('inventory:saveInventory', function(inventory)
     local identifier = xPlayer.identifier
 
     -- Очистить старый инвентарь
-    MySQL.Async.execute('DELETE FROM user_inventory WHERE identifier = @identifier', {
-        ['@identifier'] = identifier
-    })
+    MySQL.query.await('DELETE FROM user_inventory WHERE identifier = ?', {identifier})
 
     -- Вставить новый
     for item, data in pairs(inventory) do
-        MySQL.Async.execute('INSERT INTO user_inventory (identifier, item, count, slot) VALUES (@identifier, @item, @count, @slot)', {
-            ['@identifier'] = identifier,
-            ['@item'] = item,
-            ['@count'] = data.count,
-            ['@slot'] = data.slot
+        MySQL.insert.await('INSERT INTO user_inventory (identifier, item, count, slot) VALUES (?, ?, ?, ?)', {
+            identifier, item, data.count, data.slot
         })
     end
 end)
