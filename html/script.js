@@ -1,7 +1,10 @@
+let inventoryOpen = false;
+
 window.addEventListener('message', function(event) {
     if (event.data.action === 'openInventory') {
         document.getElementById('inventory').style.display = 'block';
         loadInventory(event.data.inventory);
+        inventoryOpen = true;
     }
 });
 
@@ -19,7 +22,7 @@ function loadInventory(inventory) {
     }
 }
 
-document.getElementById('close').addEventListener('click', function() {
+function closeInventory() {
     fetch('https://invetory/closeInventory', {
         method: 'POST',
         headers: {
@@ -28,4 +31,17 @@ document.getElementById('close').addEventListener('click', function() {
         body: JSON.stringify({})
     });
     document.getElementById('inventory').style.display = 'none';
+    inventoryOpen = false;
+}
+
+// Закрытие по кнопке
+document.getElementById('close').addEventListener('click', function() {
+    closeInventory();
+});
+
+// Закрытие по ESC
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape' && inventoryOpen) {
+        closeInventory();
+    }
 });
