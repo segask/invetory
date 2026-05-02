@@ -22,3 +22,7 @@ files {
 
 -- oxmysql
 dependency 'oxmysql'
+}
+
+-- oxmysql
+dependency 'oxmysql'

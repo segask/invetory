@@ -5,7 +5,12 @@ Citizen.CreateThread(function()
         Citizen.Wait(0)
     end
 
-    print("^2[Inventory] ESX успешно загружен на сервере^7")
+    -- Ожидание загрузки MySQL
+    while MySQL == nil do
+        Citizen.Wait(100)
+    end
+
+    print("^2[Inventory] ESX и MySQL успешно загружены на сервере^7")
 
     -- Загрузка инвентаря игрока
     ESX.RegisterServerCallback('inventory:loadInventory', function(source, cb)
@@ -20,7 +25,16 @@ Citizen.CreateThread(function()
         local identifier = xPlayer.identifier
         print("^3[Inventory] Идентификатор игрока: " .. identifier .. "^7")
 
-        local result = MySQL.query.await('SELECT * FROM user_inventory WHERE identifier = ?', {identifier})
+        local success, result = pcall(function()
+            return MySQL.query.await('SELECT * FROM user_inventory WHERE identifier = ?', {identifier})
+        end)
+
+        if not success then
+            print("^1[Inventory] Ошибка запроса к БД: " .. tostring(result) .. "^7")
+            cb({})
+            return
+        end
+
         print("^3[Inventory] Результат запроса: " .. tostring(result) .. "^7")
 
         local inventory = {}
@@ -46,14 +60,29 @@ Citizen.CreateThread(function()
         local identifier = xPlayer.identifier
 
         -- Очистить старый инвентарь
-        MySQL.query.await('DELETE FROM user_inventory WHERE identifier = ?', {identifier})
+        local success, err = pcall(function()
+            MySQL.query.await('DELETE FROM user_inventory WHERE identifier = ?', {identifier})
+        end)
+
+        if not success then
+            print("^1[Inventory] Ошибка очистки инвентаря: " .. tostring(err) .. "^7")
+            return
+        end
 
         -- Вставить новый
         for item, data in pairs(inventory) do
-            MySQL.insert.await('INSERT INTO user_inventory (identifier, item, count, slot) VALUES (?, ?, ?, ?)', {
-                identifier, item, data.count, data.slot
-            })
+            local success2, err2 = pcall(function()
+                MySQL.insert.await('INSERT INTO user_inventory (identifier, item, count, slot) VALUES (?, ?, ?, ?)', {
+                    identifier, item, data.count, data.slot
+                })
+            end)
+
+            if not success2 then
+                print("^1[Inventory] Ошибка сохранения предмета " .. item .. ": " .. tostring(err2) .. "^7")
+            end
         end
+
+        print("^2[Inventory] Инвентарь сохранён для игрока " .. xPlayer.name .. "^7")
     end)
 
     -- Использование предмета (пример)
