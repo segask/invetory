@@ -16,7 +16,10 @@ RegisterKeyMapping('openInventory', 'Открыть инвентарь', 'keyboa
 
 -- Открытие инвентаря
 RegisterCommand('openInventory', function()
+    print("^3[Inventory] Попытка открыть инвентарь^7")
+
     if ESX == nil then
+        print("^1[Inventory] Ошибка: ESX не загружен^7")
         TriggerEvent('chat:addMessage', {
             color = {255, 0, 0},
             multiline = true,
@@ -24,9 +27,11 @@ RegisterCommand('openInventory', function()
         })
         return
     end
-    
+
     if not inventoryOpen then
+        print("^3[Inventory] Загружаем инвентарь из базы данных^7")
         ESX.TriggerServerCallback('inventory:loadInventory', function(inventory)
+            print("^3[Inventory] Инвентарь загружен, предметов: " .. tostring(#inventory) .. "^7")
             playerInventory = inventory
             SendNUIMessage({
                 action = 'openInventory',
@@ -34,7 +39,10 @@ RegisterCommand('openInventory', function()
             })
             SetNuiFocus(true, true)
             inventoryOpen = true
+            print("^2[Inventory] Инвентарь открыт^7")
         end)
+    else
+        print("^3[Inventory] Инвентарь уже открыт^7")
     end
 end, false)
 

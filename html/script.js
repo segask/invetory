@@ -1,7 +1,9 @@
 let inventoryOpen = false;
 
 window.addEventListener('message', function(event) {
+    console.log('[Inventory] Получено сообщение:', event.data);
     if (event.data.action === 'openInventory') {
+        console.log('[Inventory] Открываем инвентарь');
         document.getElementById('overlay').style.display = 'block';
         document.getElementById('inventory').style.display = 'block';
         loadInventory(event.data.inventory);

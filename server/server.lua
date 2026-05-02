@@ -9,15 +9,19 @@ Citizen.CreateThread(function()
 
     -- Загрузка инвентаря игрока
     ESX.RegisterServerCallback('inventory:loadInventory', function(source, cb)
+        print("^3[Inventory] Загрузка инвентаря для игрока " .. tostring(source) .. "^7")
         local xPlayer = ESX.GetPlayerFromId(source)
         if not xPlayer then
+            print("^1[Inventory] Ошибка: игрок не найден^7")
             cb({})
             return
         end
 
         local identifier = xPlayer.identifier
+        print("^3[Inventory] Идентификатор игрока: " .. identifier .. "^7")
 
         local result = MySQL.query.await('SELECT * FROM user_inventory WHERE identifier = ?', {identifier})
+        print("^3[Inventory] Результат запроса: " .. tostring(result) .. "^7")
 
         local inventory = {}
         if result then
@@ -26,8 +30,10 @@ Citizen.CreateThread(function()
                     count = result[i].count,
                     slot = result[i].slot
                 }
+                print("^3[Inventory] Предмет: " .. result[i].item .. " x" .. result[i].count .. " в слоте " .. result[i].slot .. "^7")
             end
         end
+        print("^3[Inventory] Отправляем инвентарь клиенту^7")
         cb(inventory)
     end)
 
